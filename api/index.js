@@ -1,22 +1,22 @@
 // api/index.js
-export default async function handler(req, res) {
+export default function handler(req, res) {
   try {
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbzTbq9stvMKpOHbCFB-xafgF9B7Jrn0pEs8Kt-gn3_wxjkAgvo3R0SoMDW1cdnXoYdV/exec';
     
     const params = new URLSearchParams();
-    // Mod != 1 zodat het telt
-    params.set('mod', '0');
-    // Spoof browser User-Agent zodat Google Script het telt
-    params.set('ua', 'vercel-browser/1.0 Mozilla/5.0');
+    params.set('mod', '0'); // telt mee
+    params.set('ua', 'vercel-browser/1.0 Mozilla/5.0'); // spoof User-Agent
 
     const url = `${scriptUrl}?${params.toString()}`;
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Google Script returned ${response.status}`);
+    // Fire-and-forget fetch
+    fetch(url).catch(err => console.error('Google Script fetch error:', err));
 
-    res.status(200).json({ success: true });
+    // Direct terug naar client, ongeacht of Google Script al klaar is
+    res.status(200).json({ success: true, message: 'Fetch gestart, telt mee!' });
+
   } catch (error) {
-    console.error('Error fetching Google Script:', error);
+    console.error('API error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 }

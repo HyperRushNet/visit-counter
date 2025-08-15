@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+export default function handler(req, res) {
   const scriptUrl = "https://script.google.com/macros/s/AKfycbzVpymE_nsWEDkI65Rf287YxLU2g0j_xXHV3tTjWlc2qPcmylR3qxBct5MaauHUeUGy/exec";
 
   // CORS headers
@@ -10,29 +10,25 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // **Snel antwoord geven**
+  // **Direct response naar user**
   res.status(200).json({ message: '+1 scheduled - Counter' });
 
-  // **Asynchrone achtergrond-fetch**
-  setTimeout(async () => {
+  // **Background fetch zonder await**
+  (async () => {
     try {
-      // tijdelijke cache-variabele in memory
       global._pendingFetch = global._pendingFetch || false;
 
       if (!global._pendingFetch) {
         global._pendingFetch = true;
 
-        await fetch(`${scriptUrl}?ua=vercel-fetch`, {
-          headers: {
-            'User-Agent': 'vercel-fetch'
-          }
-        });
-
-        global._pendingFetch = false;
+        fetch(`${scriptUrl}?ua=vercel-fetch`, {
+          headers: { 'User-Agent': 'vercel-fetch' }
+        }).catch(err => console.error('Background fetch failed:', err))
+          .finally(() => { global._pendingFetch = false; });
       }
-    } catch (error) {
-      console.error('Background Google Script fetch error:', error);
+    } catch (e) {
+      console.error('Background fetch error:', e);
       global._pendingFetch = false;
     }
-  }, 0); // direct na response starten
+  })();
 }

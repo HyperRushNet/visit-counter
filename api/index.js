@@ -1,30 +1,16 @@
-// api/index.js - Add 1 user to Google DB
+// api/index.js
 export default async function handler(req, res) {
   try {
-    // Bouw query parameters met browser info
     const params = new URLSearchParams();
+    // Server-side fetch telt niet
+    params.set('mod', '1'); 
+    params.set('ua', req.headers['user-agent'] || 'vercel-fetch');
 
-    // Check of de request headers bestaan (server-side fetch)
-    const headers = req.headers || {};
-
-    // Standaard User-Agent (vercel-fetch) als niet beschikbaar
-    const ua = headers['user-agent'] || 'vercel-fetch';
-    params.set('ua', ua);
-
-    // Optioneel: voeg extra server-side info toe
-    params.set('platform', headers['sec-ch-ua-platform'] || '');
-    params.set('language', headers['accept-language'] || '');
-    params.set('mod', '1'); // voorkomt dubbele telling bij server-side fetch
-
-    // Nieuwe Google Script URL
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwuy_NVBf55hKcgaCMJLGrFzMTF1iVztkWH5l-_7MqN40LnkABHJZYERldxUs2Mswuv/exec';
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbxe7nWBEA17dekNLSIv7LWC_psU5p2AiBLGE5TF9J4QUEZM708IaHBM7o65A_T0sGke/exec';
     const url = `${scriptUrl}?${params.toString()}`;
 
-    // Fetch naar Google Script
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Google Script returned status ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Google Script returned ${response.status}`);
 
     res.status(200).end();
   } catch (error) {
